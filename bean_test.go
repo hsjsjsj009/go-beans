@@ -19,13 +19,13 @@ func (s *BeanTestSuite) SetupTest()  {
 func(s *BeanTestSuite) TestNewBeanNotFunc() {
 	provider := "test"
 	_,_,err := newBean(provider,s.Container)
-	s.EqualError(err,MustBeFunc)
+	s.EqualError(err, mustBeFunc)
 }
 
 func(s *BeanTestSuite) TestNewBeanFuncWithNoOutput() {
 	provider := func() {}
 	_,_,err := newBean(provider,s.Container)
-	s.EqualError(err,OnlyOneOutput)
+	s.EqualError(err, onlyOneOutput)
 }
 
 func(s *BeanTestSuite) TestNewBeanFuncWithTwoOutput() {
@@ -33,26 +33,26 @@ func(s *BeanTestSuite) TestNewBeanFuncWithTwoOutput() {
 		return nil,struct{}{}
 	}
 	_,_,err := newBean(provider,s.Container)
-	s.EqualError(err,OnlyOneOutput)
+	s.EqualError(err, onlyOneOutput)
 }
 
 func(s *BeanTestSuite) TestBeanCall() {
 	_,bean,_ := newBean(newTest2Interface,s.Container)
 	val, err := bean.call()
 	s.Nil(err)
-	s.Equal(val[0].Type(),reflect.TypeOf(&Test2{}))
+	s.Equal(val[0].Type(),reflect.TypeOf(&test2{}))
 }
 
 func(s *BeanTestSuite) TestBeanCallTypeNotFound() {
-	provider := func(t *Test1,_ Test) *Test2 {
-		return &Test2{
+	provider := func(t *test1,_ test) *test2 {
+		return &test2{
 			Test1: t,
 		}
 	}
 	_,bean,_ := newBean(provider,s.Container)
 	_, err := bean.call()
 	s.NotNil(err)
-	s.EqualError(err,ErrorDepNotFound(reflect.TypeOf(&Test1{})).Error())
+	s.EqualError(err, errorDepNotFound(reflect.TypeOf(&test1{})).Error())
 }
 
 func TestBeanTestSuite(t *testing.T) {

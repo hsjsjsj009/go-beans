@@ -7,7 +7,7 @@ func(c *ProviderContainer) AddProvider(fun interface{}) {
 	}
 	_,ok := c.dependencyInitiator[returnType]
 	if ok {
-		panic(DepAlreadyDefined)
+		panic(depAlreadyDefined)
 	}
 	c.dependencyInitiator[returnType] = beanData
 }

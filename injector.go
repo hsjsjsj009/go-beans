@@ -8,7 +8,7 @@ import (
 func(c *ProviderContainer) getDepValue(typ reflect.Type) ([]reflect.Value,error) {
 	initFunc,ok := c.dependencyInitiator[typ]
 	if !ok {
-		return nil,ErrorDepNotFound(typ)
+		return nil, errorDepNotFound(typ)
 	}
 	initValue,err := initFunc.call()
 	if err != nil {
@@ -24,11 +24,11 @@ func(c *ProviderContainer) InjectStruct(data interface{}) (err error) {
 		}
 	}()
 	if data == nil {
-		return fmt.Errorf(NotNil)
+		return fmt.Errorf(notNil)
 	}
 	dataType := reflect.TypeOf(data)
 	if dataType.Kind() != reflect.Ptr {
-		return fmt.Errorf(MustBePtr)
+		return fmt.Errorf(mustBePtr)
 	}
 	dataValueElem := reflect.ValueOf(data).Elem()
 	dataTypeElem := dataType.Elem()
@@ -37,7 +37,7 @@ func(c *ProviderContainer) InjectStruct(data interface{}) (err error) {
 		dataField := dataTypeElem.Field(i)
 		dataFieldType := dataField.Type
 		dataFieldTag := dataField.Tag
-		if dataFieldTag.Get("bean") != BeanAutoWired {
+		if dataFieldTag.Get("bean") != beanAutoWired {
 			continue
 		}
 		initValue,err := c.getDepValue(dataFieldType)
@@ -59,7 +59,7 @@ func(c *ProviderContainer) InjectVariable(vars ...interface{}) (err error) {
 	for _,varData := range vars {
 		varType := reflect.TypeOf(varData)
 		if varType.Kind() != reflect.Ptr {
-			return fmt.Errorf(MustBePtr)
+			return fmt.Errorf(mustBePtr)
 		}
 		varElemValue := reflect.ValueOf(varData).Elem()
 		initValue,err := c.getDepValue(varType.Elem())

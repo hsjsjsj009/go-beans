@@ -16,14 +16,14 @@ func (s *ProviderTestSuite) SetupTest()  {
 
 func(s *ProviderTestSuite) TestAddProviderNotFunc() {
 	provider := "test"
-	s.PanicsWithValue(MustBeFunc, func() {
+	s.PanicsWithValue(mustBeFunc, func() {
 		s.Container.AddProvider(provider)
 	})
 }
 
 func(s *ProviderTestSuite) TestAddProviderFuncWithNoOutput() {
 	provider := func() {}
-	s.PanicsWithValue(OnlyOneOutput, func() {
+	s.PanicsWithValue(onlyOneOutput, func() {
 		s.Container.AddProvider(provider)
 	})
 }
@@ -32,7 +32,7 @@ func(s *ProviderTestSuite) TestAddProviderFuncWithTwoOutput() {
 	provider := func() (error,struct{}) {
 		return nil,struct{}{}
 	}
-	s.PanicsWithValue(OnlyOneOutput, func() {
+	s.PanicsWithValue(onlyOneOutput, func() {
 		s.Container.AddProvider(provider)
 	})
 }
@@ -47,7 +47,7 @@ func(s *ProviderTestSuite) TestAddProviderFuncDuplicate() {
 	s.NotPanics(func() {
 		s.Container.AddProvider(newTest1RetInterface)
 	})
-	s.PanicsWithValue(DepAlreadyDefined,func() {
+	s.PanicsWithValue(depAlreadyDefined,func() {
 		s.Container.AddProvider(newTest1RetInterface)
 	})
 	s.Equal(1,len(s.Container.dependencyInitiator))

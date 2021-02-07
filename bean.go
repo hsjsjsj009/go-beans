@@ -16,11 +16,11 @@ func newBean(initFun interface{},container *ProviderContainer) (reflect.Type,*be
 	funType := reflect.TypeOf(initFun)
 	kind := funType.Kind()
 	if kind != reflect.Func {
-		return nil, nil, fmt.Errorf(MustBeFunc)
+		return nil, nil, fmt.Errorf(mustBeFunc)
 	}
 	numOut := funType.NumOut()
 	if numOut != 1 {
-		return nil, nil, fmt.Errorf(OnlyOneOutput)
+		return nil, nil, fmt.Errorf(onlyOneOutput)
 	}
 	numIn := funType.NumIn()
 	for i := 0;i<numIn;i++ {
@@ -40,7 +40,7 @@ func(b *bean) call() ([]reflect.Value,error) {
 	for _,dep := range b.dependency{
 		depBean,ok := b.container.dependencyInitiator[dep]
 		if !ok {
-			return nil,ErrorDepNotFound(dep)
+			return nil, errorDepNotFound(dep)
 		}
 		depVal,err := depBean.call()
 		if err != nil {

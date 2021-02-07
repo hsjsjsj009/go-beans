@@ -20,8 +20,8 @@ func (s *InjectorTestSuite) SetupTest() {
 
 func(s *InjectorTestSuite) TestInjectStruct() {
 	dummyStruct := struct {
-		Test Test `bean:"autowired"`
-		Test2 *Test2 `bean:"autowired"`
+		Test  test   `bean:"autowired"`
+		Test2 *test2 `bean:"autowired"`
 	}{}
 
 	err := s.Container.InjectStruct(&dummyStruct)
@@ -32,8 +32,8 @@ func(s *InjectorTestSuite) TestInjectStruct() {
 
 func(s *InjectorTestSuite) TestInjectVars() {
 	var (
-		test Test
-		test2 *Test2
+		test  test
+		test2 *test2
 	)
 
 	err := s.Container.InjectVariable(&test,&test2)
@@ -44,8 +44,8 @@ func(s *InjectorTestSuite) TestInjectVars() {
 
 func(s *InjectorTestSuite) TestInjectStructWithNoAutoWiredField() {
 	dummyStruct := struct {
-		Test Test
-		Test2 *Test2 `bean:"autowired"`
+		Test  test
+		Test2 *test2 `bean:"autowired"`
 	}{}
 
 	err := s.Container.InjectStruct(&dummyStruct)
@@ -56,21 +56,21 @@ func(s *InjectorTestSuite) TestInjectStructWithNoAutoWiredField() {
 
 func(s *InjectorTestSuite) TestInjectStructDepNotFoundInStructField() {
 	dummyStruct := struct {
-		Test1 *Test1 `bean:"autowired"`
+		Test1 *test1 `bean:"autowired"`
 	}{}
 
 	err := s.Container.InjectStruct(&dummyStruct)
 	s.NotNil(err)
-	s.EqualError(err,ErrorDepNotFound(reflect.TypeOf((*Test1)(nil))).Error())
+	s.EqualError(err, errorDepNotFound(reflect.TypeOf((*test1)(nil))).Error())
 	s.Nil(dummyStruct.Test1)
 }
 
 func(s *InjectorTestSuite) TestInjectStructWithAValueInside() {
 	dummyStruct := struct {
-		Test Test
-		Test2 *Test2 `bean:"autowired"`
+		Test  test
+		Test2 *test2 `bean:"autowired"`
 	}{
-		Test: &Test1{
+		Test: &test1{
 			"test1",
 		},
 	}
@@ -79,7 +79,7 @@ func(s *InjectorTestSuite) TestInjectStructWithAValueInside() {
 	s.Nil(err)
 	s.NotNil(dummyStruct.Test)
 	s.NotNil(dummyStruct.Test2)
-	s.Equal("test1",dummyStruct.Test.GetTest())
+	s.Equal("test1",dummyStruct.Test.getTest())
 }
 
 func TestInjectorTestSuite(t *testing.T) {
