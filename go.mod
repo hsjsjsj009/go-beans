@@ -1,4 +1,4 @@
-module github.com/hsjsjsj009/bean-DI
+module github.com/hsjsjsj009/go-beans
 
 go 1.14
 
