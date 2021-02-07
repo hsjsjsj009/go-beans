@@ -1,4 +1,4 @@
-package bean_DI
+package beans
 
 import (
 	"fmt"

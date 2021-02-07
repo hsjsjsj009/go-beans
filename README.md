@@ -1,5 +1,6 @@
-# bean-DI
-
+# Go-Beans
+![Go](https://github.com/hsjsjsj009/go-beans/workflows/Go/badge.svg)
+<br>
 This repository contains a Golang Dependency Injector that inspired by Spring Boot Bean System
 
 # How to Add to Your Project
