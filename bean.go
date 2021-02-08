@@ -9,9 +9,10 @@ type bean struct {
 	dependency []reflect.Type
 	initFun interface{}
 	container *ProviderContainer
+	singletonObjectValue []reflect.Value
 }
 
-func newBean(initFun interface{},container *ProviderContainer) (reflect.Type,*bean,error) {
+func newBean(initFun interface{},container *ProviderContainer,singleton bool) (reflect.Type,*bean,error) {
 	var dependencyList []reflect.Type
 	funType := reflect.TypeOf(initFun)
 	kind := funType.Kind()
@@ -20,7 +21,7 @@ func newBean(initFun interface{},container *ProviderContainer) (reflect.Type,*be
 	}
 	numOut := funType.NumOut()
 	if numOut != 1 {
-		return nil, nil, fmt.Errorf(onlyOneOutput)
+		return nil, nil, fmt.Errorf(outputRestriction)
 	}
 	numIn := funType.NumIn()
 	for i := 0;i<numIn;i++ {
@@ -28,14 +29,26 @@ func newBean(initFun interface{},container *ProviderContainer) (reflect.Type,*be
 		dependencyList = append(dependencyList,inType)
 	}
 	returnType := funType.Out(0)
-	return returnType,&bean{
+	outputBean := &bean{
 		dependency: dependencyList,
 		initFun: initFun,
 		container: container,
-	},nil
+	}
+	if singleton {
+		val,err := outputBean.call()
+		if err != nil {
+			return nil, nil, err
+		}
+		outputBean.singletonObjectValue = val
+	}
+
+	return returnType,outputBean,nil
 }
 
 func(b *bean) call() ([]reflect.Value,error) {
+	if len(b.singletonObjectValue) > 0 {
+		return b.singletonObjectValue,nil
+	}
 	var listDependency []reflect.Value
 	for _,dep := range b.dependency{
 		depBean,ok := b.container.dependencyInitiator[dep]

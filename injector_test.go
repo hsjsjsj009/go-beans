@@ -14,7 +14,7 @@ type InjectorTestSuite struct {
 func (s *InjectorTestSuite) SetupTest() {
 	s.Container = NewContainer()
 	s.Container.AddProvider(newTest1RetInterface)
-	s.Container.AddProvider(newTest2Interface)
+	s.Container.AddProviderSingleton(newTest2Interface)
 	s.Container.AddProvider(newTest3Ptr)
 }
 
@@ -40,6 +40,19 @@ func(s *InjectorTestSuite) TestInjectVars() {
 	s.Nil(err)
 	s.NotNil(test)
 	s.NotNil(test2)
+}
+
+func(s *InjectorTestSuite) TestInjectVarsSingleton() {
+	var (
+		test21 *test2
+		test2 *test2
+	)
+
+	err := s.Container.InjectVariable(&test21,&test2)
+	s.Nil(err)
+	s.NotNil(test21)
+	s.NotNil(test2)
+	s.Equal(test21,test2)
 }
 
 func(s *InjectorTestSuite) TestInjectStructWithNoAutoWiredField() {
@@ -80,6 +93,25 @@ func(s *InjectorTestSuite) TestInjectStructWithAValueInside() {
 	s.NotNil(dummyStruct.Test)
 	s.NotNil(dummyStruct.Test2)
 	s.Equal("test1",dummyStruct.Test.getTest())
+}
+
+func(s *InjectorTestSuite) TestInjectStructSingleton() {
+	dummyStruct1 := struct {
+		Test2 *test2 `bean:"autowired"`
+	}{}
+	dummyStruct2 := struct {
+		Test2 *test2 `bean:"autowired"`
+	}{}
+
+
+
+	err := s.Container.InjectStruct(&dummyStruct1)
+	s.Nil(err)
+	s.NotNil(dummyStruct1.Test2)
+	err1 := s.Container.InjectStruct(&dummyStruct2)
+	s.Nil(err1)
+	s.NotNil(dummyStruct2.Test2)
+	s.Equal(dummyStruct2.Test2,dummyStruct1.Test2)
 }
 
 func TestInjectorTestSuite(t *testing.T) {

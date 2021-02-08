@@ -8,7 +8,7 @@ import (
 func main() {
 	provider := beans.NewContainer()
 	provider.AddProvider(newTest1RetInterface)
-	provider.AddProvider(newTest2Interface)
+	provider.AddProviderSingleton(newTest2Interface)
 	provider.AddProvider(newTest3Ptr)
 
 	var (
@@ -32,4 +32,7 @@ func main() {
 	}
 	fmt.Println(demoStruct.Test2)
 	fmt.Println(demoStruct.Test2.Test1)
+
+	fmt.Printf("struct Test2 %p - var Test2 %p - equal %v\n",demoStruct.Test2,test3.Test2,demoStruct.Test2 == test3.Test2)
+
 }

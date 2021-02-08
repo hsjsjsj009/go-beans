@@ -8,6 +8,7 @@ This repository contains a Golang Dependency Injector that inspired by Spring Bo
 1. Autowire all dependency that you need
 2. Struct Injector
 3. Variable Injector
+4. Can add Singleton provider
 
 # How to Add to Your Project
 
@@ -73,9 +74,14 @@ After that you must register the provider function to the container.
 
 ```go
 provider.AddProvider(newTest1RetInterface)
-provider.AddProvider(newTest2Interface)
 provider.AddProvider(newTest3Ptr)
 ```
+
+For singleton provider, you can use `AddProviderSingleton` function, the provider function will be executed eagerly to prevent the problem in asynchronous access to the container.
+```go
+provider.AddProviderSingleton(newTest2Interface)
+```
+
 
 ## Inject the Dependency
 
