@@ -1,6 +1,7 @@
 package beans
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/suite"
 	"reflect"
 	"testing"
@@ -28,12 +29,28 @@ func(s *BeanTestSuite) TestNewBeanFuncWithNoOutput() {
 	s.EqualError(err, outputRestriction)
 }
 
-func(s *BeanTestSuite) TestNewBeanFuncWithTwoOutput() {
+func(s *BeanTestSuite) TestNewBeanFuncWithTwoOutputErrorFirst() {
 	provider := func() (error,struct{}) {
 		return nil,struct{}{}
 	}
 	_,_,err := newBean(provider,s.Container,false)
 	s.EqualError(err, outputRestriction)
+}
+
+func(s *BeanTestSuite) TestNewBeanFuncWithTwoOutput() {
+	provider := func() (struct{},error) {
+		return struct{}{},nil
+	}
+	_,_,err := newBean(provider,s.Container,false)
+	s.Nil(err)
+}
+
+func(s *BeanTestSuite) TestNewBeanFuncWithOneOutput() {
+	provider := func() struct{} {
+		return struct{}{}
+	}
+	_,_,err := newBean(provider,s.Container,false)
+	s.Nil(err)
 }
 
 func(s *BeanTestSuite) TestBeanCall() {
@@ -53,6 +70,30 @@ func(s *BeanTestSuite) TestBeanCallTypeNotFound() {
 	_, err := bean.call()
 	s.NotNil(err)
 	s.EqualError(err, errorDepNotFound(reflect.TypeOf(&test1{})).Error())
+}
+
+func(s *BeanTestSuite) TestBeanCallReturnError() {
+	provider := func(_ test) (*test2,error) {
+		return nil,fmt.Errorf("")
+	}
+	_,bean,_ := newBean(provider,s.Container,false)
+	_, err := bean.call()
+	s.NotNil(err)
+	s.EqualError(err, errorDepReturnError(reflect.ValueOf(&test2{}).Type(),fmt.Errorf("")).Error())
+}
+
+func(s *BeanTestSuite) TestBeanCallReturnError2LevelProvider() {
+	provider := func(_ test) (*test2,error) {
+		return nil,fmt.Errorf("")
+	}
+	provider1 := func(_ *test2) *test1 {
+		return nil
+	}
+	s.Container.AddProvider(provider)
+	_,bean,_ := newBean(provider1,s.Container,false)
+	_, err := bean.call()
+	s.NotNil(err)
+	s.EqualError(err, errorDepReturnError(reflect.ValueOf(&test2{}).Type(),fmt.Errorf("")).Error())
 }
 
 func(s *BeanTestSuite) TestBeanSingleton() {

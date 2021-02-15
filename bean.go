@@ -7,8 +7,10 @@ import (
 
 type bean struct {
 	dependency []reflect.Type
+	initType reflect.Type
 	initFun interface{}
 	container *ProviderContainer
+	haveError bool
 	singletonObjectValue []reflect.Value
 }
 
@@ -20,7 +22,7 @@ func newBean(initFun interface{},container *ProviderContainer,singleton bool) (r
 		return nil, nil, fmt.Errorf(mustBeFunc)
 	}
 	numOut := funType.NumOut()
-	if numOut != 1 {
+	if numOut < 1 || numOut > 2 {
 		return nil, nil, fmt.Errorf(outputRestriction)
 	}
 	numIn := funType.NumIn()
@@ -33,6 +35,13 @@ func newBean(initFun interface{},container *ProviderContainer,singleton bool) (r
 		dependency: dependencyList,
 		initFun: initFun,
 		container: container,
+		initType: returnType,
+	}
+	if numOut == 2 {
+		if secType := funType.Out(1);secType.String() != "error" {
+			return nil, nil, fmt.Errorf(outputRestriction)
+		}
+		outputBean.haveError = true
 	}
 	if singleton {
 		val,err := outputBean.call()
@@ -61,5 +70,11 @@ func(b *bean) call() ([]reflect.Value,error) {
 		}
 		listDependency = append(listDependency,depVal[0])
 	}
-	return reflect.ValueOf(b.initFun).Call(listDependency),nil
+	retVal := reflect.ValueOf(b.initFun).Call(listDependency)
+	if b.haveError {
+		if errData := retVal[1];!retVal[1].IsNil() {
+			return nil,errorDepReturnError(b.initType,errData.Interface().(error))
+		}
+	}
+	return retVal,nil
 }

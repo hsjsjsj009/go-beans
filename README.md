@@ -82,6 +82,21 @@ For singleton provider, you can use `AddProviderSingleton` function, the provide
 provider.AddProviderSingleton(newTest2Interface)
 ```
 
+You can add error return value for self-defined provider function error by giving second return value as error interface
+```go
+func newTest3PtrWithErr(t test,t2 *test2) (*test3,error) {
+	if t == nil {
+	    return nil,fmt.Errorf("error")
+}
+	return &test3{
+		t,
+		t2,
+	},nil
+}
+
+provider.AddProvider(newTest3PtrWithErr)
+```
+
 
 ## Inject the Dependency
 
