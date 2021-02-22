@@ -5,6 +5,13 @@ import (
 	"reflect"
 )
 
+type CleanUpFunc func()
+
+var (
+	cleanUpFuncType = reflect.TypeOf(CleanUpFunc(nil))
+	emptyListValue  []reflect.Value
+)
+
 type bean struct {
 	dependency []reflect.Type
 	initType reflect.Type
@@ -12,17 +19,35 @@ type bean struct {
 	container *ProviderContainer
 	haveError bool
 	singletonObjectValue []reflect.Value
+	cleanUpFunc *reflect.Value
+}
+
+func newBeanFromObjectData(initData interface{},cleanUpFunc ...CleanUpFunc) (reflect.Type,*bean,error) {
+	dataValue := reflect.ValueOf(initData)
+	dataType := dataValue.Type()
+	beanData := &bean{
+		singletonObjectValue: []reflect.Value{dataValue},
+		initType: dataType,
+	}
+	if len(cleanUpFunc) > 0 {
+		cleanUpFuncValue := reflect.ValueOf(cleanUpFunc[0])
+		beanData.cleanUpFunc = &cleanUpFuncValue
+	}
+	return dataType,beanData,nil
 }
 
 func newBean(initFun interface{},container *ProviderContainer,singleton bool) (reflect.Type,*bean,error) {
-	var dependencyList []reflect.Type
+	var (
+		dependencyList []reflect.Type
+		cleanUpExist bool
+	)
 	funType := reflect.TypeOf(initFun)
 	kind := funType.Kind()
 	if kind != reflect.Func {
 		return nil, nil, fmt.Errorf(mustBeFunc)
 	}
 	numOut := funType.NumOut()
-	if numOut < 1 || numOut > 2 {
+	if numOut < 1 || (numOut > 2 && !singleton) || (numOut > 3 && singleton) {
 		return nil, nil, fmt.Errorf(outputRestriction)
 	}
 	numIn := funType.NumIn()
@@ -39,19 +64,43 @@ func newBean(initFun interface{},container *ProviderContainer,singleton bool) (r
 	}
 	if numOut == 2 {
 		if secType := funType.Out(1);secType.String() != "error" {
-			return nil, nil, fmt.Errorf(outputRestriction)
+			if !singleton {
+				return nil, nil, fmt.Errorf(outputRestriction)
+			}
+			if secType != cleanUpFuncType {
+				return nil, nil, fmt.Errorf(outputRestriction)
+			}
+			cleanUpExist = true
+		} else {
+			outputBean.haveError = true
 		}
-		outputBean.haveError = true
 	}
+
 	if singleton {
+		if numOut == 3 {
+			secType := funType.Out(2)
+			if secType != cleanUpFuncType {
+				return nil, nil, fmt.Errorf(outputRestriction)
+			}
+			cleanUpExist = true
+		}
 		val,err := outputBean.call()
 		if err != nil {
 			return nil, nil, err
 		}
-		outputBean.singletonObjectValue = val
+		outputBean.singletonObjectValue = val[:1]
+		if cleanUpExist {
+			outputBean.cleanUpFunc = &(val[len(val)-1])
+		}
 	}
 
 	return returnType,outputBean,nil
+}
+
+func(b *bean) cleanUp() {
+	if b.cleanUpFunc != nil {
+		b.cleanUpFunc.Call(emptyListValue)
+	}
 }
 
 func(b *bean) call() ([]reflect.Value,error) {

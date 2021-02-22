@@ -53,6 +53,79 @@ func(s *BeanTestSuite) TestNewBeanFuncWithOneOutput() {
 	s.Nil(err)
 }
 
+func(s *BeanTestSuite) TestNewBeanFuncWith2OutputAndCleanUpFunc() {
+	provider := func() (struct{},CleanUpFunc) {
+		return struct{}{}, func() {
+			fmt.Println("asdasd")
+		}
+	}
+	_,_,err := newBean(provider,s.Container,false)
+	s.NotNil(err)
+	s.EqualError(err,outputRestriction)
+}
+
+func(s *BeanTestSuite) TestNewBeanFuncWith3OutputAndCleanUpFunc() {
+	provider := func() (struct{},error,CleanUpFunc) {
+		return struct{}{},nil, func() {
+			fmt.Println("asdasd")
+		}
+	}
+	_,_,err := newBean(provider,s.Container,false)
+	s.NotNil(err)
+	s.EqualError(err,outputRestriction)
+}
+
+func(s *BeanTestSuite) TestNewBeanFuncSingletonWith2OutputAndCleanUpFunc() {
+	provider := func() (struct{},CleanUpFunc) {
+		return struct{}{}, func() {
+			fmt.Println("asdasd")
+		}
+	}
+	_,_,err := newBean(provider,s.Container,true)
+	s.Nil(err)
+}
+
+func(s *BeanTestSuite) TestNewBeanFuncSingletonWith2Output() {
+	provider := func() (struct{},struct{}) {
+		return struct{}{}, struct{}{}
+	}
+	_,_,err := newBean(provider,s.Container,true)
+	s.NotNil(err)
+	s.EqualError(err,outputRestriction)
+}
+
+func(s *BeanTestSuite) TestNewBeanFuncSingletonWith3OutputAndCleanUpFunc() {
+	provider := func() (struct{},error,CleanUpFunc) {
+		return struct{}{},nil, func() {
+			fmt.Println("asdasd")
+		}
+	}
+	_,_,err := newBean(provider,s.Container,true)
+	s.Nil(err)
+}
+
+func(s *BeanTestSuite) TestNewBeanFuncSingletonWith3Output() {
+	provider := func() (struct{},error,interface{}) {
+		return struct{}{},nil, "asdasdasd"
+	}
+	_,_,err := newBean(provider,s.Container,true)
+	s.NotNil(err)
+	s.EqualError(err,outputRestriction)
+}
+
+func(s *BeanTestSuite) TestCleanUpFunc() {
+	count := 0
+	provider := func() (struct{},error,CleanUpFunc) {
+		return struct{}{},nil, func() {
+			count++
+		}
+	}
+	_,bean,err := newBean(provider,s.Container,true)
+	s.Nil(err)
+	bean.cleanUp()
+	s.Equal(1,count)
+}
+
 func(s *BeanTestSuite) TestBeanCall() {
 	_,bean,_ := newBean(newTest2Interface,s.Container,false)
 	val, err := bean.call()
@@ -106,6 +179,33 @@ func(s *BeanTestSuite) TestBeanSingleton() {
 	s.Equal(val1[0],val2[0])
 	s.Equal(1,len(val1))
 	s.Equal(1,len(val2))
+}
+
+func(s *BeanTestSuite) TestNewBeanSingletonObjectNoCleanUpFunc() {
+	data := &test2{}
+	_,_,err := newBeanFromObjectData(data)
+	s.Nil(err)
+}
+
+func(s *BeanTestSuite) TestNewBeanSingletonObject() {
+	count := 0
+	data := &test2{}
+	_,_,err := newBeanFromObjectData(data, func() {
+		count++
+	})
+	s.Nil(err)
+}
+
+func(s *BeanTestSuite) TestNewBeanSingletonObjectCall() {
+	count := 0
+	data := &test2{}
+	_,bean,err := newBeanFromObjectData(data, func() {
+		count++
+	})
+	s.Nil(err)
+	beanData,err := bean.call()
+	s.Nil(err)
+	s.Equal(beanData[0].Interface().(*test2),data)
 }
 
 func TestBeanTestSuite(t *testing.T) {

@@ -68,6 +68,24 @@ func(s *ProviderTestSuite) TestAddProviderSingletonDepNotFound() {
 	s.Equal(0,len(s.Container.dependencyInitiator))
 }
 
+func(s *ProviderTestSuite) TestAddSingletonObjectData() {
+	s.NotPanics(func() {
+		s.Container.AddObjectSingleton(&test2{})
+	})
+	s.Equal(1,len(s.Container.dependencyInitiator))
+}
+
+func(s *ProviderTestSuite) TestCleanUpFunc()  {
+	count := 0
+	s.Container.AddProviderSingleton(func() (test,CleanUpFunc) {
+		return &test1{"asdasdasd"}, func() {
+			count++
+		}
+	})
+	s.Container.CleanUp()
+	s.Equal(1,count)
+}
+
 func TestProviderTestSuite(t *testing.T) {
 	suite.Run(t, new(ProviderTestSuite))
 }

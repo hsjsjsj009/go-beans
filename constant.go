@@ -11,7 +11,13 @@ const (
 
 const (
 	mustBeFunc        = "provider must be a function"
-	outputRestriction = "provider function must have 1 output or 2 output include error in the second output"
+	outputRestriction = `provider function pattern:
+	a. 1 dependency output 
+	b. 2 dependency output + error
+	c. 2 dependency output + cleanUp Function (singleton only)
+	d. 3 dependency output + error + cleanUp Function (singleton only)
+
+cleanUp Func -> 0 input 0 output`
 	mustBePtr         = "must be pointer"
 	notNil            = "not nil"
 	depAlreadyDefined = "dependency already defined"

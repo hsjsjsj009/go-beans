@@ -1,3 +1,8 @@
+# Update v1.2
+## Features
+1. Add cleanup function in singleton provider and singleton object
+2. Can register singleton object directly to the container
+
 # Update v1.1.1
 ## Features
 1. Enable self-defined error in provider function

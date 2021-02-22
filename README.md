@@ -9,6 +9,8 @@ This repository contains a Golang Dependency Injector that inspired by Spring Bo
 2. Struct Injector
 3. Variable Injector
 4. Can add Singleton provider
+5. Can provide clean up function for singleton provider
+6. Can register object to the container with the clean up function
 
 # How to Add to Your Project
 
@@ -77,11 +79,6 @@ provider.AddProvider(newTest1RetInterface)
 provider.AddProvider(newTest3Ptr)
 ```
 
-For singleton provider, you can use `AddProviderSingleton` function, the provider function will be executed eagerly to prevent the problem in asynchronous access to the container.
-```go
-provider.AddProviderSingleton(newTest2Interface)
-```
-
 You can add error return value for self-defined provider function error by giving second return value as error interface
 ```go
 func newTest3PtrWithErr(t test,t2 *test2) (*test3,error) {
@@ -95,6 +92,32 @@ func newTest3PtrWithErr(t test,t2 *test2) (*test3,error) {
 }
 
 provider.AddProvider(newTest3PtrWithErr)
+```
+
+For singleton provider, you can use `AddProviderSingleton` function, the provider function will be executed eagerly to prevent the problem in asynchronous access to the container. You can give a cleanup function in the last return value of the provider function.
+```go
+provider.AddProviderSingleton(newTest2Interface)
+provider.AddProviderSingleton(func() (*sql.DB,CleanUpFunc){
+	db := &sql.DB{}
+	return db,func() {
+		db.Close()
+    }
+})
+//OR with error value
+provider.AddProviderSingleton(func() (*sql.DB,err,CleanUpFunc){
+        db := &sql.DB{}
+        return db,nil,func() {
+        db.Close()
+    }
+})
+```
+
+Or you can directly register singleton object to the container and also you can give a cleanup function.
+```go
+db := &sql.DB{}
+provider.AddObjectSingleton(db,func() {
+	db.Close()
+})
 ```
 
 

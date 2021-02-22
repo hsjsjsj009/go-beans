@@ -42,6 +42,25 @@ func(s *InjectorTestSuite) TestInjectVars() {
 	s.NotNil(test2)
 }
 
+func(s *InjectorTestSuite) TestInjectVarsDepNotFound() {
+	var (
+		test21 *test1
+	)
+
+	err := s.Container.InjectVariable(&test21)
+	s.NotNil(err)
+	s.Nil(test21)
+}
+
+func(s *InjectorTestSuite) TestInjectVarsNotPtr() {
+	var (
+		test21 test1
+	)
+
+	err := s.Container.InjectVariable(test21)
+	s.NotNil(err)
+}
+
 func(s *InjectorTestSuite) TestInjectVarsSingleton() {
 	var (
 		test21 *test2
@@ -65,6 +84,23 @@ func(s *InjectorTestSuite) TestInjectStructWithNoAutoWiredField() {
 	s.Nil(err)
 	s.Nil(dummyStruct.Test)
 	s.NotNil(dummyStruct.Test2)
+}
+
+func(s *InjectorTestSuite) TestInjectStructNil() {
+	err := s.Container.InjectStruct(nil)
+	s.NotNil(err)
+	s.EqualError(err,notNil)
+}
+
+func(s *InjectorTestSuite) TestInjectStructNotAPointer() {
+	dummyStruct := struct {
+		Test  test
+		Test2 *test2 `bean:"autowired"`
+	}{}
+
+	err := s.Container.InjectStruct(dummyStruct)
+	s.NotNil(err)
+	s.EqualError(err,mustBePtr)
 }
 
 func(s *InjectorTestSuite) TestInjectStructDepNotFoundInStructField() {
