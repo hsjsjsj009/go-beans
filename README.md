@@ -1,5 +1,5 @@
 # Go-Beans
-![Go](https://github.com/hsjsjsj009/go-beans/workflows/Go/badge.svg)
+![Go](https://github.com/hsjsjsj009/go-beans/workflows/Go/badge.svg) ![](https://badgen.net/codecov/c/github/hsjsjsj009/go-beans)
 <br>
 This repository contains a Golang Dependency Injector that inspired by Spring Boot Bean System
 
