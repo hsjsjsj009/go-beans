@@ -19,11 +19,7 @@ jobs:
         go-version: 1.15
 
     - name: Test
-      run: go test ./... -cover > coverage.out
+      run: go test -coverprofile=coverage.txt -covermode=atomic
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODE_COV }}
-        files: ./coverage.out
-        flags: unittests
+      run: bash <(curl -s https://codecov.io/bash)
