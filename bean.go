@@ -76,9 +76,6 @@ func newBean(initFun interface{},container *ProviderContainer,singleton bool) (r
 		}
 
 		if numOut >= 3 {
-			if !singleton || numOut > 3 {
-				return nil, nil, fmt.Errorf(outputRestriction)
-			}
 			secType := funType.Out(2)
 			if secType != cleanUpFuncType {
 				return nil, nil, fmt.Errorf(outputRestriction)
