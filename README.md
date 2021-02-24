@@ -123,11 +123,20 @@ provider.AddObjectSingleton(db,func() {
 
 ## Inject the Dependency
 
-In this module, i created two functions that inject dependencies to a struct or variable. If you want to inject dependencies to a struct you must give `bean:"autowired"` tag to your field. All field must be exported to allow injection from outside. After that you call `InjectStruct` function and give the function your struct pointer. You can see the example below.
+In this module, I created two functions that inject dependencies to a struct or variable. If you want to inject dependencies to a struct you must give `bean:"autowired"` tag to your field. All field must be exported to allow injection from outside. After that you call `InjectStruct` function and give the function your struct pointer. You can see the example below.
 
 ```go
 demoStruct := struct {
 		Test2 *test2 `bean:"autowired"`
+	}{}
+
+err = provider.InjectStruct(&demoStruct)
+```
+
+If you use struct composition you must provide the composition provider because in go the composition works as a field without name and also the composition must be exported too.
+```go
+demoStruct := struct {
+		*Test2 `bean:"autowired"`
 	}{}
 
 err = provider.InjectStruct(&demoStruct)
