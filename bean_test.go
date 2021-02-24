@@ -81,8 +81,9 @@ func(s *BeanTestSuite) TestNewBeanFuncSingletonWith2OutputAndCleanUpFunc() {
 			fmt.Println("asdasd")
 		}
 	}
-	_,_,err := newBean(provider,s.Container,true)
+	_,bean,err := newBean(provider,s.Container,true)
 	s.Nil(err)
+	s.False(bean.haveError)
 }
 
 func(s *BeanTestSuite) TestNewBeanFuncSingletonWith2Output() {
@@ -100,8 +101,19 @@ func(s *BeanTestSuite) TestNewBeanFuncSingletonWith3OutputAndCleanUpFunc() {
 			fmt.Println("asdasd")
 		}
 	}
-	_,_,err := newBean(provider,s.Container,true)
+	_,bean,err := newBean(provider,s.Container,true)
 	s.Nil(err)
+	s.True(bean.haveError)
+}
+
+func(s *BeanTestSuite) TestNewBeanFuncSingletonWith4Output() {
+	provider := func() (struct{},error,CleanUpFunc,string) {
+		return struct{}{},nil, func() {
+			fmt.Println("asdasd")
+		},"asdasdasd"
+	}
+	_,_,err := newBean(provider,s.Container,true)
+	s.NotNil(err)
 }
 
 func(s *BeanTestSuite) TestNewBeanFuncSingletonWith3Output() {

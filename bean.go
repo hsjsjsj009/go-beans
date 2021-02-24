@@ -62,7 +62,7 @@ func newBean(initFun interface{},container *ProviderContainer,singleton bool) (r
 		container: container,
 		initType: returnType,
 	}
-	if numOut == 2 {
+	if numOut >= 2 {
 		if secType := funType.Out(1);secType.String() != "error" {
 			if !singleton {
 				return nil, nil, fmt.Errorf(outputRestriction)
@@ -74,16 +74,20 @@ func newBean(initFun interface{},container *ProviderContainer,singleton bool) (r
 		} else {
 			outputBean.haveError = true
 		}
-	}
 
-	if singleton {
-		if numOut == 3 {
+		if numOut >= 3 {
+			if !singleton || numOut > 3 {
+				return nil, nil, fmt.Errorf(outputRestriction)
+			}
 			secType := funType.Out(2)
 			if secType != cleanUpFuncType {
 				return nil, nil, fmt.Errorf(outputRestriction)
 			}
 			cleanUpExist = true
 		}
+	}
+
+	if singleton {
 		val,err := outputBean.call()
 		if err != nil {
 			return nil, nil, err

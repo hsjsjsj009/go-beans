@@ -1,3 +1,7 @@
+# Update v1.2.1
+## Debug
+1. Error not detected on a function with 3 output
+
 # Update v1.2
 ## Features
 1. Add cleanup function in singleton provider and singleton object
